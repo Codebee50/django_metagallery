@@ -1,13 +1,55 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, UpdateUserSerializer, ChangePasswordSerializer
 from .models import UserAccount
 from common.responses import SuccessResponse, ErrorResponse
 from common.utils import format_first_error
 from rest_framework import status, permissions
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
 
+class ChangePasswordView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return ErrorResponse(message=format_first_error(serializer.errors))
+        
+        user = request.user
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+        
+        if not user.check_password(old_password):
+            return ErrorResponse(message="Old password is incorrect", status=401)
+
+        if new_password == old_password:
+            return ErrorResponse(message="New password cannot be same as old password")
+        
+        with transaction.atomic():
+            user.set_password = serializer.validated_data.get('new_password')
+            user.save()
+            return SuccessResponse(message="Password changed successfully")
+            
+class UpdateUserView(generics.UpdateAPIView):
+    serializer_class = UpdateUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def finalize_response(self, request, response, *args, **kwargs):
+        print(response)
+        return super().finalize_response(request, response, *args, **kwargs)
+
+class GetUserProfileView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
@@ -43,7 +85,7 @@ class LoginView(generics.GenericAPIView):
             )
             
         else:
-            return ErrorResponse(message=format_first_error(serializer.errors))
+            return ErrorResponse(message=format_first_error(serializer.errors, with_key=False))
 
 
 class RegisterUserView(generics.GenericAPIView):
@@ -66,5 +108,5 @@ class RegisterUserView(generics.GenericAPIView):
             UserAccount.objects.create_user(email=email, password=password, username=username)
             return SuccessResponse(message=f'Registration successful')
         else:
-            return ErrorResponse(message=format_first_error(serializer.errors))
+            return ErrorResponse(message=format_first_error(serializer.errors, with_key=False))
 

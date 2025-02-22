@@ -12,8 +12,10 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    objects = CustomUserManager()
+    bio =models.TextField(blank=True, null=True)
+    cover_image = models.ImageField(upload_to='cover-images/', null=True, blank=True)
     
+    objects = CustomUserManager()
     USERNAME_FIELD='email'
     REQUIRED_FIELDS=['username']
     

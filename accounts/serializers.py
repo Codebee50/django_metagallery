@@ -1,10 +1,21 @@
 from rest_framework import serializers
 from accounts.models import UserAccount
 
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
         fields= '__all__'
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields= ['bio', 'cover_image', 'profile_photo']
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
