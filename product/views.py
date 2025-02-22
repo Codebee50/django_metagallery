@@ -40,6 +40,7 @@ class SalesListView(generics.ListAPIView):
     def get_queryset(self):
         q1 = Q(buyer=self.request.user)
         q2 = Q(seller=self.request.user)
+        #TODO: filter by q1 and q2
         return Sale.objects.all()
         
 
