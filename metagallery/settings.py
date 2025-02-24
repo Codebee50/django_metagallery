@@ -221,9 +221,9 @@ if not DEBUG:
         },
         
         # CSS and JS file management
-        # "staticfiles": {
-        #     "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
-        # },
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        },
 
     }
 
