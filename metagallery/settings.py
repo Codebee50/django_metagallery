@@ -221,8 +221,11 @@ if not DEBUG:
         
         # CSS and JS file management
         "staticfiles": {
-            "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
+        # "staticfiles": {
+        #     "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        # },
 
     }
 
