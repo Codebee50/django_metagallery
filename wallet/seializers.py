@@ -38,7 +38,7 @@ class WithdrawalSerializer(serializers.ModelSerializer):
 
     
 class DepositSerializer(serializers.ModelSerializer):
-    wallet = WalletSerializer()
+    wallet = WalletSerializer(required=False)
     class Meta:
         fields = '__all__'
         model = Deposit
