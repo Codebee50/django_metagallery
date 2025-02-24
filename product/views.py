@@ -144,9 +144,13 @@ class UploadNftView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         wallet, created = Wallet.objects.get_or_create(user=self.request.user)
         
+        
         business = Business.objects.first()
         
         minting_fee = business.minting_fee if business else 0.2
+        
+        if wallet.account_balance < minting_fee:
+            return ErrorResponse(message=f"Insufficient balance, you need at least {minting_fee} eth in your account balance in order to mint nfts")
         wallet.account_balance -= minting_fee
         wallet.save()
         
