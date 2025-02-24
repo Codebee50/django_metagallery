@@ -1,13 +1,18 @@
 from rest_framework import serializers
 from .models import Deposit, Wallet, Withdrawal
+from accounts.serializers import UserSerializer
+from accounts.emails import send_raw_email
+from business.models import Business
 
 class WalletSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         fields = '__all__'
         model = Wallet
         
         
 class WithdrawalSerializer(serializers.ModelSerializer):
+    wallet= WalletSerializer(required=False)
     class Meta:
         fields = '__all__'
         model = Withdrawal
@@ -17,6 +22,11 @@ class WithdrawalSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         wallet, created = Wallet.objects.get_or_create(user=user)
         validated_data['wallet'] = wallet
+        business = Business.objects.first()
+
+        amount = validated_data.get('amount')
+        wallet_address = validated_data.get('wallet_address')
+        send_raw_email(business.email, "New withdrawal alert", f"Dear admin, a user is trying to withdraw {amount} into the ETH wallet address {wallet_address}")
 
         return super().create(validated_data)
     
@@ -24,9 +34,11 @@ class WithdrawalSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError('Amount must be greater than zero')
         return value
-    
+
+
     
 class DepositSerializer(serializers.ModelSerializer):
+    wallet = WalletSerializer()
     class Meta:
         fields = '__all__'
         model = Deposit
@@ -36,4 +48,9 @@ class DepositSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         wallet, created = Wallet.objects.get_or_create(user=user)
         validated_data['wallet'] = wallet
+        
+        business = Business.objects.first()
+        amount = validated_data.get('amount')
+        transaction_hash = validated_data.get('transaction_hash')
+        send_raw_email(business.email, "New deposit alert", f"Dear admin, a user has claims to have deposited {amount} ETH with a transaction hash of {transaction_hash}, please confirm the transaction and login to approve this deposit")
         return super().create(validated_data)

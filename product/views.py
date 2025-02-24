@@ -8,6 +8,8 @@ from wallet.models import Wallet
 from django.db.models import Q
 from decimal import Decimal
 from rest_framework.response import Response
+from business.models import Business
+from accounts.emails import send_raw_email
 
 class GetRelatedNft(generics.ListAPIView):
     serializer_class = NftSerializer
@@ -17,15 +19,15 @@ class GetRelatedNft(generics.ListAPIView):
         except Nft.DoesNotExist:
             return Nft.objects.none()
     
-        return Nft.objects.filter(category=nft.category)
+        return Nft.approved.filter(category=nft.category)
 
 class GetUserNftList(generics.ListAPIView):
     serializer_class = NftSerializer
     def get_queryset(self):
-        return Nft.objects.filter(owner=self.kwargs.get('owner_id'))
+        return Nft.approved.filter(owner=self.kwargs.get('owner_id'))
 
 class GetNftListView(generics.ListAPIView):
-    queryset = Nft.objects.all()
+    queryset = Nft.approved.all()
     serializer_class = NftSerializer
 
 class CategoryProductListView(generics.ListAPIView):
@@ -98,14 +100,14 @@ class GetProductForCategoryView(generics.ListAPIView):
         try:
             category = Category.objects.get(id=int(self.kwargs.get('category_id')))
         except:
-            nft_list = Nft.objects.all()
+            nft_list = Nft.objects.filter(is_admin_approved=True)
             category = Category(name=str(category_id).capitalize(), description=self.default_category_description)
             return SuccessResponse(message="Category", data={
                 "category": CategorySerializer(category).data,
                 "nfts": NftSerializer(nft_list, many=True).data
             })
             
-        nft_list = Nft.objects.filter(category=int(category_id))
+        nft_list = Nft.objects.filter(category=int(category_id), is_admin_approved=True )
         
         return SuccessResponse(message="Category", data={
             "category": CategorySerializer(category).data,
@@ -141,6 +143,12 @@ class UploadNftView(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         wallet, created = Wallet.objects.get_or_create(user=self.request.user)
-        wallet.account_balance -= Decimal(0.2)
+        
+        business = Business.objects.first()
+        
+        minting_fee = business.minting_fee if business else 0.2
+        wallet.account_balance -= minting_fee
         wallet.save()
+        
+        send_raw_email(business.email, 'New nft upload', "A user has uploaded a new nft on the site, please login to approve it")
         return super().create(request, *args, **kwargs)

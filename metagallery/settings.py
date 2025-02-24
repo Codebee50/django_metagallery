@@ -50,7 +50,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
-    'whitenoise'
+    'whitenoise',
+    'business',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -178,10 +180,17 @@ REST_FRAMEWORK = {
 }
 
 
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# STORAGES = {
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
 
 CORS_ALLOW_ALL_ORIGINS = True 
+
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')

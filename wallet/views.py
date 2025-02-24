@@ -5,9 +5,9 @@ from .models import Wallet
 from common.responses import SuccessResponse, ErrorResponse
 from .seializers import DepositSerializer, WithdrawalSerializer
 from common.utils import format_first_error
+from django.db.models import F
 
 class WithdrawFromWalletView(generics.CreateAPIView):
-    #TODO: send emaail to admin
     serializer_class = WithdrawalSerializer
     permission_classes = [permissions.IsAuthenticated]
     def create(self, request, *args, **kwargs):
@@ -15,17 +15,31 @@ class WithdrawFromWalletView(generics.CreateAPIView):
         if serializer.is_valid():
             wallet = Wallet.objects.get(user=request.user)
             source = serializer.validated_data.get('source')
+            amount = serializer.validated_data.get('amount')
+            
             key = "account_balance" if source == "account" else "sales_balance"
             if getattr(wallet, key) < serializer.validated_data['amount']:
                 return ErrorResponse(message="Insufficient balance")
+            
+            if key=='account_balance':
+                wallet.account_balance = F('account_balance') - amount
+            
+            if key =='sales_balance':
+                wallet.sales_balance = F(key) - amount
+            
+            wallet.save()
+                    
         else:
             return ErrorResponse(message=format_first_error(serializer.errors))
         return super().create(request, *args, **kwargs)
 
 class DepositIntoWalletView(generics.CreateAPIView):
-    #TODO: send email to admin
     serializer_class = DepositSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
     
 class GetWalletBalanceView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]

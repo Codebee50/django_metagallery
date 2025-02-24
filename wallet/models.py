@@ -6,6 +6,15 @@ class WithdrawalSourceChoices(models.TextChoices):
     ACCOUNT = 'account'
     SALES = 'sales'
 
+class TransactionTypeChoices(models.TextChoices):
+    MINT = 'mint', 'Mint'
+    DEPOSIT = 'deposit', 'Deposit'
+    WITHDRAWAL = 'withdrawal', 'withdrawal'
+
+class TransactionStatusChoices(models.TextChoices):
+    SUCCESS ='success', 'Success'
+    PENDING = 'pending', 'Pending'
+    FAILED = 'failed', 'Failed'
 
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
@@ -15,6 +24,17 @@ class Wallet(models.Model):
     
     def __str__(self):
         return f"Owned by {self.user.username}"
+
+
+class Transaction(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    amount = models.DecimalField(decimal_places=6, max_digits=30)
+    transaction_type = models.CharField(choices=TransactionTypeChoices.choices, max_length=20, default=TransactionTypeChoices.DEPOSIT)
+    narration = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(choices=TransactionStatusChoices.choices, max_length=20, default=TransactionStatusChoices.PENDING)
+    
     
     
 class Deposit(models.Model):
@@ -25,6 +45,7 @@ class Deposit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     transaction_hash = models.TextField()
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True)
     
 class Withdrawal(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
@@ -35,4 +56,5 @@ class Withdrawal(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     wallet_address = models.TextField()
     source = models.CharField(default=WithdrawalSourceChoices.ACCOUNT, choices=WithdrawalSourceChoices.choices, max_length=20)
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True)
     

@@ -16,11 +16,12 @@ class NftSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Nft
-        read_only_fields = ['id', 'uploaded_by', 'status', 'created_at', 'updated_at', 'owner']
+        read_only_fields = ['id', 'uploaded_by', 'status', 'created_at', 'updated_at', 'owner', 'is_admin_approved']
     
     def create(self, validated_data):
         validated_data['uploaded_by'] = self.context.get('request').user
         validated_data['owner'] = self.context.get('request').user
+        validated_data['is_listed'] = True
         return super().create(validated_data)
 
 class SaleSerializer(serializers.ModelSerializer):
