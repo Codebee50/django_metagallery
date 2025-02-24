@@ -186,7 +186,6 @@ REST_FRAMEWORK = {
 #     },
 # }
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 CORS_ALLOW_ALL_ORIGINS = True 
@@ -228,3 +227,5 @@ if not DEBUG:
     }
 
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
