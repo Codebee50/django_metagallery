@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, UpdateUserSerializer, ChangePasswordSerializer
+from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer, UserSerializer, UpdateUserSerializer, ChangePasswordSerializer
 from .models import UserAccount
 from common.responses import SuccessResponse, ErrorResponse
 from common.utils import format_first_error
@@ -8,6 +8,24 @@ from rest_framework import status, permissions
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
+
+class LogoutApi(generics.GenericAPIView):
+    permission_classes =[permissions.IsAuthenticated]
+    serializer_class = LogoutSerializer
+    
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return ErrorResponse(message=format_first_error(serializer.errors))
+        
+        try:
+            refresh_token = serializer.validated_data.get('refresh_token')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return SuccessResponse(message="Logout successful")
+        except Exception as e:
+            print(e)
+            return ErrorResponse(message="Invalid session")
 
 class ChangePasswordView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
