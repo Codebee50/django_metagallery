@@ -199,4 +199,4 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = config('EMAIL_USE_TLS')
 
 if not DEBUG:
-    CSRF_TRUSTED_ORIGINS = ['https://metagallery.up.railway.app/']
+    CSRF_TRUSTED_ORIGINS = ['https://metagallery.up.railway.app']
