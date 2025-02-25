@@ -106,6 +106,39 @@ class NftDetailsView(generics.RetrieveAPIView):
     queryset = Nft.objects.all()
 
 
+class CategoryOrSearchView(generics.ListAPIView):
+    serializer_class = NftSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    default_category_description = "Step into a dynamic digital marketplace where creators and collectors unite to buy, sell, and trade one-of-a-kind NFTs. Dive into a diverse collection of digital assets, from art and collectibles to music, videos, and beyond—each securely authenticated on the blockchain to ensure verified ownership and rarity."
+
+    def list(self, request, *args, **kwargs):
+        category_name = self.kwargs.get('category_name')
+        search_term = request.query_params.get('search')
+        
+        
+        if search_term:
+            nft_list= Nft.objects.filter(title__icontains=search_term)
+            category = Category(name=str(search_term).capitalize(), description=self.default_category_description)
+            return SuccessResponse( message="Category search", data={
+                "category": CategorySerializer(category).data,
+                "nfts": NftSerializer(nft_list, many=True).data   
+            })
+        
+        category_list = Category.objects.filter(name__iexact=category_name)
+        if category_list.exists():
+            category = category_list.first()
+            nft_list = Nft.objects.filter(category__name__iexact=category_name)
+        else:
+            category = Category(name=str(category_name).capitalize(), description=self.default_category_description)
+            nft_list = Nft.objects.filter(category__name__icontains=category_name)
+        
+        return SuccessResponse( message="Category search", data={
+            "category": CategorySerializer(category).data,
+            "nfts": NftSerializer(nft_list, many=True).data   
+        })
+                    
+
 class GetProductForCategoryView(generics.ListAPIView):
     serializer_class = NftSerializer
     permission_classes = [permissions.AllowAny]
