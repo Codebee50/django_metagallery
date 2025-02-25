@@ -8,5 +8,6 @@ urlpatterns = [
    path("user/update/", views.UpdateUserView.as_view(), name='update-user-view'),
    path('user/password/change/', views.ChangePasswordView.as_view(), name='change-password'),
    path('logout/', views.LogoutApi.as_view(), name='logout'),
-   path('user/list/', views.UserListApi.as_view(), name='user-list')
+   path('user/list/', views.UserListApi.as_view(), name='user-list'),
+   path('status/<uuid:user_id>/<str:verified>/', views.ChangeUserVerificationStatus.as_view(), name='change_verification_status')
 ]

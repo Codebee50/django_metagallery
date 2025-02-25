@@ -11,6 +11,22 @@ from django.db import transaction
 from wallet.seializers import AdminUserListSerializer
 
 
+class ChangeUserVerificationStatus(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id')
+        verified = kwargs.get('verified').lower() == 'true'
+        
+        try:
+            user = UserAccount.objects.get(id=user_id)
+        except UserAccount.DoesNotExist:
+            return ErrorResponse(message="Account not found")
+        
+        user.is_verified = verified
+        user.save()
+        return SuccessResponse(message="Status changed successfully")
+        
+        
+
 class UserListApi(generics.ListAPIView):
     queryset = UserAccount.objects.all()
     serializer_class = AdminUserListSerializer
