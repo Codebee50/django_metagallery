@@ -122,7 +122,7 @@ class CategoryOrSearchView(generics.ListAPIView):
             category = Category(name=str(search_term).capitalize(), description=self.default_category_description)
             return SuccessResponse( message="Category search", data={
                 "category": CategorySerializer(category).data,
-                "nfts": NftSerializer(nft_list, many=True).data   
+                "nfts": NftSerializer(nft_list, many=True, context={"request": request}).data   
             })
         
         category_list = Category.objects.filter(name__iexact=category_name)
@@ -135,7 +135,7 @@ class CategoryOrSearchView(generics.ListAPIView):
         
         return SuccessResponse( message="Category search", data={
             "category": CategorySerializer(category).data,
-            "nfts": NftSerializer(nft_list, many=True).data   
+            "nfts": NftSerializer(nft_list, many=True, context={'request': request}).data   
         })
                     
 
