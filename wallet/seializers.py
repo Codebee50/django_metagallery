@@ -4,13 +4,29 @@ from accounts.serializers import UserSerializer
 from accounts.emails import send_raw_email
 from business.models import Business
 from .models import Transaction, TransactionTypeChoices
+from accounts.models import UserAccount
 class WalletSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
         fields = '__all__'
         model = Wallet
         
+class WalletSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = '__all__'
+        model = Wallet
         
+class AdminUserListSerializer(serializers.ModelSerializer):
+    wallet = serializers.SerializerMethodField()
+    class Meta:
+        model = UserAccount
+        fields= '__all__'
+    
+    def get_wallet(self, obj):
+        wallet, created = Wallet.objects.get_or_create(user=obj)
+        print(wallet)
+        return WalletSimpleSerializer(wallet).data
+
 class WithdrawalSerializer(serializers.ModelSerializer):
     wallet= WalletSerializer(required=False)
     class Meta:

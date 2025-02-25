@@ -3,9 +3,16 @@ from rest_framework import generics
 from rest_framework import permissions
 from .models import Wallet
 from common.responses import SuccessResponse, ErrorResponse
-from .seializers import DepositSerializer, WithdrawalSerializer
+from .seializers import DepositSerializer, WithdrawalSerializer, WalletSimpleSerializer
 from common.utils import format_first_error
 from django.db.models import F
+from accounts.permissions import IsAdmin
+
+class WalletEditView(generics.UpdateAPIView):
+    serializer_class = WalletSimpleSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    queryset = Wallet.objects.all()
+    lookup_field = 'id'
 
 class WithdrawFromWalletView(generics.CreateAPIView):
     serializer_class = WithdrawalSerializer

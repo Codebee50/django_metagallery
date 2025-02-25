@@ -8,6 +8,12 @@ from rest_framework import status, permissions
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
+from wallet.seializers import AdminUserListSerializer
+
+
+class UserListApi(generics.ListAPIView):
+    queryset = UserAccount.objects.all()
+    serializer_class = AdminUserListSerializer
 
 class LogoutApi(generics.GenericAPIView):
     permission_classes =[permissions.IsAuthenticated]

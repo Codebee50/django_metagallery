@@ -14,6 +14,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     bio =models.TextField(blank=True, null=True)
     cover_image = models.ImageField(upload_to='cover-images/', null=True, blank=True)
+    created_at =models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     objects = CustomUserManager()
     USERNAME_FIELD='email'

@@ -1,13 +1,16 @@
 from rest_framework import serializers
 from accounts.models import UserAccount
 
-
 class LogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+
+
+
+        
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
