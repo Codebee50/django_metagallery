@@ -10,6 +10,24 @@ from decimal import Decimal
 from rest_framework.response import Response
 from business.models import Business
 from accounts.emails import send_raw_email
+from accounts.models import UserAccount
+from accounts.serializers import UserSerializer
+
+
+class GetUserAndNfts(generics.GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        username = kwargs.get('username')
+        try:
+            user = UserAccount.objects.get(username=username)
+        except UserAccount.DoesNotExist:
+            return ErrorResponse(message="User not found")
+
+        nfts = Nft.objects.filter(owner=user)
+        return SuccessResponse(message="User account and nfts", data={
+            'user': UserSerializer(user, context={'request': request}).data,
+            'nfts': NftSerializer(nfts, many=True, context={'request': request}).data
+        })
+        
 
 class GetRelatedNft(generics.ListAPIView):
     serializer_class = NftSerializer

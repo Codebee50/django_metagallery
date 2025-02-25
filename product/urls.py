@@ -13,5 +13,6 @@ urlpatterns = [
     path('category/products/', views.CategoryProductListView.as_view(), name='category-product-list'),
     path('nft/', views.GetNftListView.as_view(), name='get-nft-list'),
     path('nft/user/<uuid:owner_id>/', views.GetUserNftList.as_view(), name='get-user-nfts'),
-    path('nft/related/<uuid:id>/', views.GetRelatedNft.as_view(), name='get-related-nft')
+    path('nft/related/<uuid:id>/', views.GetRelatedNft.as_view(), name='get-related-nft'),
+    path('nft/creator/<str:username>/', views.GetUserAndNfts.as_view(), name='get-user-and-nfts')
 ]

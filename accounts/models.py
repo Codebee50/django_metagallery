@@ -5,7 +5,7 @@ from .managers import CustomUserManager
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
-    username = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True, max_length=255)
     profile_photo = models.ImageField(upload_to="profile-images/", null=True, blank=True)
     is_admin = models.BooleanField(default=False)
