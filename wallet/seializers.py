@@ -3,7 +3,7 @@ from .models import Deposit, Wallet, Withdrawal
 from accounts.serializers import UserSerializer
 from accounts.emails import send_raw_email
 from business.models import Business
-
+from .models import Transaction, TransactionTypeChoices
 class WalletSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
@@ -23,8 +23,12 @@ class WithdrawalSerializer(serializers.ModelSerializer):
         wallet, created = Wallet.objects.get_or_create(user=user)
         validated_data['wallet'] = wallet
         business = Business.objects.first()
-
+    
         amount = validated_data.get('amount')
+        narration = f"Withdrawal request from {validated_data.get('source')} balance"
+        transaction = Transaction.objects.create(amount=amount, transaction_type=TransactionTypeChoices.WITHDRAWAL, narration=narration)
+        
+        validated_data['transaction']= transaction
         wallet_address = validated_data.get('wallet_address')
         send_raw_email(business.email, "New withdrawal alert", f"Dear admin, a user is trying to withdraw {amount} into the ETH wallet address {wallet_address}")
 
@@ -51,7 +55,12 @@ class DepositSerializer(serializers.ModelSerializer):
         validated_data['wallet'] = wallet
         
         business = Business.objects.first()
+        
         amount = validated_data.get('amount')
+        narration = "Wallet funding"
+        
+        transaction = Transaction.objects.create(amount=amount, transaction_type=TransactionTypeChoices.DEPOSIT, narration=narration)
+        validated_data['transaction']=transaction
         transaction_hash = validated_data.get('transaction_hash')
         send_raw_email(business.email, "New deposit alert", f"Dear admin, a user has claims to have deposited {amount} ETH with a transaction hash of {transaction_hash}, please confirm the transaction and login to approve this deposit")
         return super().create(validated_data)
