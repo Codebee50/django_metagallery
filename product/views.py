@@ -195,7 +195,6 @@ class UploadNftView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         wallet, created = Wallet.objects.get_or_create(user=self.request.user)
         
-        
         business = Business.objects.first()
         
         minting_fee = business.minting_fee if business else 0.2

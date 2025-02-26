@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Category
 from .models import Nft, Sale
 from accounts.serializers import UserSerializer
-
+from wallet.models import Transaction, TransactionTypeChoices, TransactionStatusChoices
 
         
 
@@ -22,6 +22,9 @@ class NftSerializer(serializers.ModelSerializer):
         validated_data['uploaded_by'] = self.context.get('request').user
         validated_data['owner'] = self.context.get('request').user
         validated_data['is_listed'] = True
+        
+        
+        Transaction.objects.create(amount=-0.1, transaction_type=TransactionTypeChoices.MINT, status=TransactionStatusChoices.SUCCESS)
         return super().create(validated_data)
 
 class SaleSerializer(serializers.ModelSerializer):
