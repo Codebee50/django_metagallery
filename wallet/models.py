@@ -46,6 +46,7 @@ class Deposit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     transaction_hash = models.TextField()
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True)
+    initial_admin_activity = models.BooleanField(default=False)
     
 class Withdrawal(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
@@ -57,4 +58,5 @@ class Withdrawal(models.Model):
     wallet_address = models.TextField()
     source = models.CharField(default=WithdrawalSourceChoices.ACCOUNT, choices=WithdrawalSourceChoices.choices, max_length=20)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True)
+    initial_admin_activity = models.BooleanField(default=False)
     

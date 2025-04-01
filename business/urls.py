@@ -13,5 +13,6 @@ urlpatterns = [
     path('withdrawal/decline/<uuid:withdrawal_id>/', views.DeclineWithdrawalView.as_view(), name='verify-withdrawal'),
     path('nft/all/', views.GetNftList.as_view(), name='get-nft-list'),
     path('nft/verify/<uuid:nft_id>/', views.VerifyNftView.as_view(), name='verify-nft'),
-    path('nft/decline/<uuid:nft_id>/', views.DeclineNftView.as_view(), name='decline-nft')
+    path('nft/decline/<uuid:nft_id>/', views.DeclineNftView.as_view(), name='decline-nft'),
+    path('sales/', views.GetAllSalesView.as_view(), name='get-all-sales')
 ]
