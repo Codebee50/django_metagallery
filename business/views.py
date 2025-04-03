@@ -4,7 +4,7 @@ from .models import Business
 from .serializers import BusinessSerializer
 from accounts.permissions import IsAdmin, IsAdminOrReadOnly
 from rest_framework.permissions import IsAuthenticated
-from wallet.seializers import DepositSerializer, WithdrawalSerializer
+from wallet.seializers import DepositSerializer, WalletSerializer, WithdrawalSerializer
 from wallet.models import Deposit, Withdrawal, WithdrawalSourceChoices
 from product.serializers import NftSerializer
 from product.models import Nft, Sale
@@ -82,9 +82,11 @@ class DeclineWithdrawalView(generics.GenericAPIView):
             return ErrorResponse(message="Withdrawal is already declined")
 
         if withdrawal.source == WithdrawalSourceChoices.SALES:
-            withdrawal.wallet.sales_balance = F("sales_balance") + withdrawal.amount
+            withdrawal.wallet.sales_balance += withdrawal.amount
+            withdrawal.wallet.save(update_fields=["sales_balance"])
         else:
-            withdrawal.wallet.account_balance = F("account_balance") + withdrawal.amount
+            withdrawal.wallet.account_balance += withdrawal.amount
+            withdrawal.wallet.save(update_fields=["account_balance"])
 
         withdrawal.wallet.save()
         withdrawal.initial_admin_activity = True
@@ -96,14 +98,16 @@ class DeclineWithdrawalView(generics.GenericAPIView):
             f"Hello {withdrawal.wallet.user.username} Your withdrawal request has been declined",
         )
 
+        data = WithdrawalSerializer(withdrawal).data
         return SuccessResponse(
             message="Withdrawal declined successfully",
-            data=WithdrawalSerializer(withdrawal).data,
+            data=data,
         )
 
 
 class VerifyWithdrawalView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = WithdrawalSerializer
 
     def post(self, request, *args, **kwargs):
         withdrawal_id = kwargs.get("withdrawal_id")
@@ -118,11 +122,11 @@ class VerifyWithdrawalView(generics.GenericAPIView):
 
         if withdrawal.initial_admin_activity:
             if withdrawal.source == WithdrawalSourceChoices.SALES:
-                withdrawal.wallet.sales_balance = F("sales_balance") - withdrawal.amount
+                withdrawal.wallet.sales_balance -= withdrawal.amount
+                withdrawal.wallet.save(update_fields=["sales_balance"])
             else:
-                withdrawal.wallet.account_balance = (
-                    F("account_balance") - withdrawal.amount
-                )
+                withdrawal.wallet.account_balance -= withdrawal.amount
+                withdrawal.wallet.save(update_fields=["account_balance"])
 
         withdrawal.is_admin_verified = True
         withdrawal.initial_admin_activity = True
@@ -135,7 +139,7 @@ class VerifyWithdrawalView(generics.GenericAPIView):
         )
         return SuccessResponse(
             message="Withdrawal verified successfully",
-            data=WithdrawalSerializer(withdrawal).data,
+            data=self.get_serializer(withdrawal).data,
         )
 
 
@@ -152,8 +156,8 @@ class DeclineDepositView(generics.GenericAPIView):
         if not deposit.is_admin_verified:
             return ErrorResponse(message="Cannot decline a pending deposit")
 
-        deposit.wallet.sales_balance = F("sales_balance") - deposit.amount
-        deposit.wallet.save()
+        deposit.wallet.sales_balance -= deposit.amount
+        deposit.wallet.save(update_fields=["sales_balance"])
 
         deposit.is_admin_verified = False
         deposit.save()
@@ -180,8 +184,8 @@ class VerifyDepositEndpoint(generics.GenericAPIView):
         if deposit.is_admin_verified:
             return ErrorResponse(message="Cannot verify an already verified deposit")
 
-        deposit.wallet.account_balance = F("account_balance") + deposit.amount
-        deposit.wallet.save()
+        deposit.wallet.account_balance += deposit.amount
+        deposit.wallet.save(update_fields=["account_balance"])
 
         deposit.is_admin_verified = True
         deposit.save()
